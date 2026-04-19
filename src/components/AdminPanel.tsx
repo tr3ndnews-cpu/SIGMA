@@ -142,7 +142,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
                   value={formData.geminiModel}
                   onChange={e => setFormData({ ...formData, geminiModel: e.target.value })}
                   className="w-full p-2 border rounded-md font-mono text-sm"
-                  placeholder="gemini-2.0-flash"
+                  placeholder="gemini-1.5-flash"
                 />
               </div>
               <div>
@@ -152,7 +152,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
                   value={formData.openRouterModel}
                   onChange={e => setFormData({ ...formData, openRouterModel: e.target.value })}
                   className="w-full p-2 border rounded-md font-mono text-sm"
-                  placeholder="google/gemini-2.5-flash"
+                  placeholder="google/gemini-1.5-flash"
                 />
               </div>
               <div>

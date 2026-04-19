@@ -17,7 +17,7 @@ export async function generateContent(prompt: string, apiKey: string, schema?: a
   const aiMaxTokens = settings.aiMaxTokens ?? 2000;
 
   if (isGemini) {
-    const model = settings.geminiModel || "gemini-2.0-flash";
+    const model = settings.geminiModel || "gemini-1.5-flash";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     
     // Convert JSON schema to Gemini's format if present

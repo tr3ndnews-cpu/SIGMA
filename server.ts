@@ -50,7 +50,7 @@ async function startServer() {
         }
 
         const response = await ai.models.generateContent({
-          model: model || "gemini-3.1-pro-preview",
+          model: model || "gemini-1.5-flash",
           contents: contents,
           config: {
             systemInstruction,
@@ -73,7 +73,7 @@ async function startServer() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: model || "google/gemini-pro", // default fallback
+            model: model || "google/gemini-1.5-flash", // default fallback
             messages: messages,
             temperature: temperature ?? 0.7,
             max_tokens: maxTokens ?? undefined,
