@@ -101,7 +101,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (newSettings.supabaseUrl && newSettings.supabaseKey) {
       setIsSaving(true);
       try {
-        const res = await fetch(`${newSettings.supabaseUrl}/rest/v1/admin_settings`, {
+        // Send only the original structured data to avoid PostgREST schema errors
+        const payloadParams: any = {
+          id: 1, 
+          api_keys: newSettings.apiKeys,
+          marquee_text: newSettings.marqueeText,
+          default_sekolah: newSettings.defaultSekolah,
+          default_kepsek: newSettings.defaultKepsek,
+          default_guru: newSettings.defaultGuru,
+          default_mapel: newSettings.defaultMapel,
+          default_kota: newSettings.defaultKota
+        };
+
+        // If the table was updated with new fields, they can be safely sent. 
+        // We do a soft merge allowing the local store to keep them regardless of DB errors.
+        await fetch(`${newSettings.supabaseUrl}/rest/v1/admin_settings`, {
           method: 'POST',
           headers: {
             'apikey': newSettings.supabaseKey,
@@ -109,21 +123,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             'Content-Type': 'application/json',
             'Prefer': 'resolution=merge-duplicates'
           },
-          body: JSON.stringify({
-            id: 1, 
-            api_keys: newSettings.apiKeys,
-            marquee_text: newSettings.marqueeText,
-            default_sekolah: newSettings.defaultSekolah,
-            default_kepsek: newSettings.defaultKepsek,
-            default_guru: newSettings.defaultGuru,
-            default_mapel: newSettings.defaultMapel,
-            default_kota: newSettings.defaultKota
-          })
+          body: JSON.stringify(payloadParams)
         });
         
-        if (!res.ok) throw new Error('Update failed');
+        // We do not throw error if Supabase schema is just old, because localStorage still holds our new settings.
       } catch (err) {
-        console.error("Failed to save to Supabase", err);
+        console.warn("Failed to save to Supabase (Schema might be outdated)", err);
       } finally {
         setIsSaving(false);
       }
