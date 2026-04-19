@@ -1,8 +1,13 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 
 export interface AdminSettings {
   apiKeys: string[];
+  openRouterApiKey: string;
+  activeProvider: 'gemini' | 'openrouter';
+  geminiModel: string;
+  openRouterModel: string;
+  aiTemperature: number;
+  aiMaxTokens: number;
   marqueeText: string;
   defaultSekolah: string;
   defaultKepsek: string;
@@ -15,6 +20,12 @@ export interface AdminSettings {
 
 const defaultSettings: AdminSettings = {
   apiKeys: Array(10).fill(''),
+  openRouterApiKey: '',
+  activeProvider: 'gemini',
+  geminiModel: 'gemini-2.0-flash',
+  openRouterModel: 'google/gemini-2.5-flash',
+  aiTemperature: 0.7,
+  aiMaxTokens: 2000,
   marqueeText: 'SIGMA | SDN BAUJENG I BEJI',
   defaultSekolah: 'SDN BAUJENG I BEJI',
   defaultKepsek: 'AKHMAD NASOR / 198704082019031001',
@@ -52,14 +63,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const loadFromSupabase = async () => {
       if (settings.supabaseUrl && settings.supabaseKey) {
         try {
-          const supabase = createClient(settings.supabaseUrl, settings.supabaseKey);
-          const { data, error } = await supabase
-            .from('admin_settings')
-            .select('*')
-            .eq('id', 1)
-            .single();
+          const res = await fetch(`${settings.supabaseUrl}/rest/v1/admin_settings?id=eq.1&select=*`, {
+            headers: {
+              'apikey': settings.supabaseKey,
+              'Authorization': `Bearer ${settings.supabaseKey}`
+            }
+          });
+          
+          if (!res.ok) throw new Error('Network error');
+          const json = await res.json();
+          const data = json[0];
 
-          if (data && !error) {
+          if (data) {
             setSettings(prev => ({
               ...prev,
               apiKeys: data.api_keys || prev.apiKeys,
@@ -86,10 +101,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (newSettings.supabaseUrl && newSettings.supabaseKey) {
       setIsSaving(true);
       try {
-        const supabase = createClient(newSettings.supabaseUrl, newSettings.supabaseKey);
-        await supabase
-          .from('admin_settings')
-          .upsert({ 
+        const res = await fetch(`${newSettings.supabaseUrl}/rest/v1/admin_settings`, {
+          method: 'POST',
+          headers: {
+            'apikey': newSettings.supabaseKey,
+            'Authorization': `Bearer ${newSettings.supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({
             id: 1, 
             api_keys: newSettings.apiKeys,
             marquee_text: newSettings.marqueeText,
@@ -98,7 +118,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             default_guru: newSettings.defaultGuru,
             default_mapel: newSettings.defaultMapel,
             default_kota: newSettings.defaultKota
-          });
+          })
+        });
+        
+        if (!res.ok) throw new Error('Update failed');
       } catch (err) {
         console.error("Failed to save to Supabase", err);
       } finally {

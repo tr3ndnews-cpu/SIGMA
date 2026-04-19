@@ -111,8 +111,74 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
           </section>
 
           <section>
-            <h3 className="text-xl font-semibold mb-4 text-blue-700">Konfigurasi API Keys (Gemini)</h3>
-            <p className="text-sm text-gray-500 mb-4">Aplikasi akan mencoba key secara berurutan apabila terjadi kesalahan limit quota.</p>
+            <h3 className="text-xl font-semibold mb-4 text-blue-700">Konfigurasi AI Provider (Gemini & OpenRouter)</h3>
+            <p className="text-sm text-gray-500 mb-4">Batasi model dan kontrol limit (temperature/tokens) dari platform AI yang akan digunakan.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Provider Aktif</label>
+                <select
+                  value={formData.activeProvider}
+                  onChange={e => setFormData({ ...formData, activeProvider: e.target.value as 'gemini' | 'openrouter' })}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="gemini">Google Gemini AI</option>
+                  <option value="openrouter">OpenRouter AI</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">OpenRouter API Key</label>
+                <input
+                  type="password"
+                  value={formData.openRouterApiKey}
+                  onChange={e => setFormData({ ...formData, openRouterApiKey: e.target.value })}
+                  className="w-full p-2 border rounded-md font-mono text-sm"
+                  placeholder="sk-or-v1-..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gemini Model</label>
+                <input
+                  type="text"
+                  value={formData.geminiModel}
+                  onChange={e => setFormData({ ...formData, geminiModel: e.target.value })}
+                  className="w-full p-2 border rounded-md font-mono text-sm"
+                  placeholder="gemini-2.0-flash"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">OpenRouter Model</label>
+                <input
+                  type="text"
+                  value={formData.openRouterModel}
+                  onChange={e => setFormData({ ...formData, openRouterModel: e.target.value })}
+                  className="w-full p-2 border rounded-md font-mono text-sm"
+                  placeholder="google/gemini-2.5-flash"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Temperature ({formData.aiTemperature})</label>
+                <input
+                  type="range"
+                  min="0" max="2" step="0.1"
+                  value={formData.aiTemperature}
+                  onChange={e => setFormData({ ...formData, aiTemperature: parseFloat(e.target.value) })}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Max Tokens</label>
+                <input
+                  type="number"
+                  value={formData.aiMaxTokens}
+                  onChange={e => setFormData({ ...formData, aiMaxTokens: parseInt(e.target.value) })}
+                  className="w-full p-2 border rounded-md"
+                  placeholder="2000"
+                />
+              </div>
+            </div>
+            
+            <h3 className="text-xl font-semibold mb-4 text-blue-700 mt-6">Konfigurasi API Keys Failover (Gemini)</h3>
+            <p className="text-sm text-gray-500 mb-4">Aplikasi akan mencoba key secara berurutan apabila terjadi kesalahan limit quota (Hanya untuk Gemini).</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {formData.apiKeys.map((key, idx) => (
                 <div key={idx}>
