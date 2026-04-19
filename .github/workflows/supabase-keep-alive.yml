@@ -1,0 +1,17 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Berjalan setiap hari Senin dan Kamis pada jam 00:00 UTC (Untuk mencegah pause 7 hari)
+    - cron: '0 0 * * 1,4'
+  workflow_dispatch: # Memungkinkan trigger manual dari tab Actions jika diperlukan
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -s -X GET 'https://dyrlsbevrjxdwplvzccr.supabase.co/rest/v1/admin_settings?select=id&limit=1' \
+          -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5cmxzYmV2cmp4ZHdwbHZ6Y2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MDc4NDMsImV4cCI6MjA5MjE4Mzg0M30.imTYUaYpd6pKgdHYwpxjW8JXlrtNW60VVQJpVxB9dzs" \
+          -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5cmxzYmV2cmp4ZHdwbHZ6Y2NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MDc4NDMsImV4cCI6MjA5MjE4Mzg0M30.imTYUaYpd6pKgdHYwpxjW8JXlrtNW60VVQJpVxB9dzs"
