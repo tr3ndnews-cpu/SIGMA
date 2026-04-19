@@ -78,6 +78,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             setSettings(prev => ({
               ...prev,
               apiKeys: data.api_keys || prev.apiKeys,
+              openRouterApiKey: data.openrouter_api_key || prev.openRouterApiKey, // Pull this if they added it to DB
               marqueeText: data.marquee_text || prev.marqueeText,
               defaultSekolah: data.default_sekolah || prev.defaultSekolah,
               defaultKepsek: data.default_kepsek || prev.defaultKepsek,

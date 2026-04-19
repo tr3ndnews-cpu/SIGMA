@@ -48,11 +48,11 @@ export async function generateContent(prompt: string, apiKey: string, schema?: a
     return parseIfSchema(text, schema);
   } else {
     // OpenRouter
-    const orKey = settings.openRouterApiKey;
+    const orKey = settings.openRouterApiKey || apiKey;
     if (!orKey) {
        throw new Error("OpenRouter API Key belum dikonfigurasi di Admin.");
     }
-    const model = settings.openRouterModel || "google/gemini-2.5-flash";
+    const model = settings.openRouterModel || "google/gemini-1.5-flash";
     const url = `https://openrouter.ai/api/v1/chat/completions`;
     
     // For OpenRouter, Structured Outputs are supported but usually require standard JSON parsing
@@ -73,8 +73,8 @@ export async function generateContent(prompt: string, apiKey: string, schema?: a
     const res = await fetch(url, {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${orKey}`,
+        'Content-Type': 'application/json',
         'HTTP-Referer': window.location.href, // Recommended for OpenRouter
         'X-Title': 'SIGMA AI' // Recommended for OpenRouter
       },
