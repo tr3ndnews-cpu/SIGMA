@@ -5,6 +5,14 @@
     <link rel="icon" href="https://lh3.googleusercontent.com/d/1FV7EmCnGHRbpQvbbdrRv-t0KZCUXbIqk" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SIGMA</title>
+    <script>
+      // Temporary workaround for libraries that try to polyfill fetch
+      Object.defineProperty(window, 'fetch', {
+        value: window.fetch,
+        writable: true,
+        configurable: true
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

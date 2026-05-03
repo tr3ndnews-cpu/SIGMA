@@ -9,7 +9,22 @@ export function Step6RPP() {
   const { settings } = useSettings();
   const [loading, setLoading] = useState(false);
   const [soalHtmls, setSoalHtmls] = useState<Record<number, string>>({});
+  const [loadingState, setLoadingState] = useState<Record<number, boolean>>({});
   const [error, setError] = useState('');
+
+  const generateSingleSoal = async (tp: any, index: number) => {
+    setLoadingState(prev => ({ ...prev, [index]: true }));
+    setError('');
+    
+    try {
+      const html = await generateSoalForTp(tp, index);
+      setSoalHtmls(prev => ({ ...prev, [index]: html }));
+    } catch (err: any) {
+      setError(`Error pada pertemuan ${index + 1}: ${err.message}`);
+    } finally {
+      setLoadingState(prev => ({ ...prev, [index]: false }));
+    }
+  };
 
   const generateSoalForTp = async (tp: any, index: number) => {
     const prompt = `Anda adalah seorang ahli pembuat soal ujian untuk level ${rppData.jenjang}. Buat instrumen penilaian HOTS untuk RPP mata pelajaran ${rppData.mapel} dengan tujuan pembelajaran: "${tp.text}".
@@ -74,29 +89,6 @@ Buat respons dalam format JSON yang valid. JSON harus memiliki dua kunci utama: 
     </div>`;
   };
 
-  const handleGenerateAllSoal = async () => {
-    setLoading(true);
-    setError('');
-    let flatTps = rppData.tujuanPembelajaran.flatMap(g => g.tps);
-    let newSoals: Record<number, string> = {};
-    
-    try {
-      for (let i = 0; i < flatTps.length; i++) {
-        const tp = flatTps[i];
-        if (!soalHtmls[i]) {
-          newSoals[i] = await generateSoalForTp(tp, i);
-        } else {
-          newSoals[i] = soalHtmls[i];
-        }
-      }
-      setSoalHtmls(newSoals);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handlePrint = () => {
     const parseName = (s:string) => s.includes('/') ? s.split('/')[0].trim() : s.trim();
     const fileName = `RPP ${rppData.mapel} ${rppData.kelasSemester.replace(/\s\/\s/g, '-')} Fase ${rppData.fase} ${parseName(rppData.namaGuru)}`;
@@ -132,20 +124,13 @@ Buat respons dalam format JSON yang valid. JSON harus memiliki dua kunci utama: 
   const fDate = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
   let rppCounter = 0;
+  let indexState = 0;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-t-4 border-t-green-500 p-6 space-y-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-green-700">Hasil RPP Lengkap</h2>
         <div className="space-x-2">
-          <button onClick={handleGenerateAllSoal} disabled={loading} className="text-sm px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded inline-flex items-center">
-            {loading ? (
-              <div className="w-5 h-5 relative mr-2">
-                <div className="loader absolute-center" style={{ transform: 'scale(0.3) rotate(165deg)', top: '10px', left: '10px' }}></div>
-              </div>
-            ) : <Play className="w-4 h-4 mr-2" />}
-            Generate Lampiran Soal AI
-          </button>
           <button onClick={handlePrint} className="text-sm px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded inline-flex items-center">
             <Printer className="w-4 h-4 mr-2" /> Cetak RPP
           </button>
@@ -169,9 +154,9 @@ Buat respons dalam format JSON yang valid. JSON harus memiliki dua kunci utama: 
         {rppData.tujuanPembelajaran.map((group) => {
           return group.tps.map((tp: any, index: number) => {
             rppCounter++;
+            const currentIndex = rppCounter - 1;
             const isPBL = tp.level === 'Memahami'; 
             const model = isPBL ? 'Problem Based Learning (PBL)' : 'Project Based Learning (PjBL)';
-            const soalHtml = soalHtmls[rppCounter - 1] || '<div class="text-gray-400 italic my-4 border p-4 bg-gray-50 text-center">Lampiran soal belum digenerate. Klik "Generate Lampiran Soal AI" di atas.</div>';
 
             return (
               <div key={rppCounter} className="rpp-section mt-8 bg-white p-8 border">
@@ -248,7 +233,27 @@ Buat respons dalam format JSON yang valid. JSON harus memiliki dua kunci utama: 
                 
                 <div className="rpp-footer">RPP {guru.name} {rppData.mapel} {rppData.tahunPelajaran} {rppData.kelasSemester} {rppData.namaSekolah}</div>
                 
-                <div dangerouslySetInnerHTML={{ __html: soalHtml }} />
+                <div className="mt-8 border-t pt-2 page-break-before" style={{ pageBreakBefore: 'always' }}>
+                  {!soalHtmls[currentIndex] ? (
+                     <div className="text-center p-4 bg-gray-50 border rounded-md">
+                       <p className="text-gray-500 mb-2">Lampiran soal untuk pertemuan ini belum dibuat.</p>
+                       <button 
+                         onClick={() => generateSingleSoal(tp, currentIndex)} 
+                         disabled={loadingState[currentIndex]}
+                         className="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded inline-flex items-center text-sm"
+                       >
+                         {loadingState[currentIndex] ? (
+                            <div className="w-4 h-4 mr-2 relative">
+                               <div className="loader absolute-center" style={{ transform: 'scale(0.2) rotate(165deg)', top: '5px', left: '5px' }}></div>
+                            </div>
+                         ) : <Play className="w-4 h-4 mr-2" />}
+                         Generate Soal & Lampiran (Pertemuan {rppCounter})
+                       </button>
+                     </div>
+                  ) : (
+                    <div dangerouslySetInnerHTML={{ __html: soalHtmls[currentIndex] }} />
+                  )}
+                </div>
               </div>
             );
           });

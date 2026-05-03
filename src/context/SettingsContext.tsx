@@ -2,10 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 
 export interface AdminSettings {
   apiKeys: string[];
-  openRouterApiKey: string;
-  activeProvider: 'gemini' | 'openrouter';
   geminiModel: string;
-  openRouterModel: string;
   aiTemperature: number;
   aiMaxTokens: number;
   marqueeText: string;
@@ -20,10 +17,7 @@ export interface AdminSettings {
 
 const defaultSettings: AdminSettings = {
   apiKeys: Array(10).fill(''),
-  openRouterApiKey: '',
-  activeProvider: 'gemini',
   geminiModel: 'gemini-1.5-flash',
-  openRouterModel: 'google/gemini-1.5-flash',
   aiTemperature: 0.7,
   aiMaxTokens: 2000,
   marqueeText: 'SIGMA | SDN BAUJENG I BEJI',
@@ -78,7 +72,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             setSettings(prev => ({
               ...prev,
               apiKeys: data.api_keys || prev.apiKeys,
-              openRouterApiKey: data.openrouter_api_key || prev.openRouterApiKey, // Pull this if they added it to DB
               marqueeText: data.marquee_text || prev.marqueeText,
               defaultSekolah: data.default_sekolah || prev.defaultSekolah,
               defaultKepsek: data.default_kepsek || prev.defaultKepsek,
